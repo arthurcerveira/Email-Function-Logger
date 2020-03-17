@@ -3,7 +3,7 @@ import os
 import io
 
 from datetime import datetime
-from contextlib import redirect_stdout, redirect_stderr
+from contextlib import redirect_stdout
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -21,14 +21,15 @@ def log_function(function):
         arguments = get_function_arguments(args, kwargs)
 
         # Add subject to email
-        subject = f"Function '{function.__name__}' execution log"
+        subject = "Function '{}' execution log".format(function.__name__)
         message['Subject'] = subject
 
         # Start email body text
-        text = f"Function {function.__name__}({arguments}) finished its execution.\n\n"
+        text = "Function {}({}) finished its execution.\n\n".format(
+            function.__name__, arguments)
 
         start_time = datetime.now()
-        text += f"Start time: {start_time:%b %d %H:%M:%S}\n"
+        text += "Start time: {0:%b %d %H:%M:%S}\n".format(start_time)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -36,16 +37,19 @@ def log_function(function):
 
         text_output = f.getvalue()
 
-        text += f'Function text output:\n{text_output}' if text_output else 'No text output\n'
-        text += f'Function returned: {return_value}\n' if return_value else 'No returned value\n'
+        text += 'Function text output:\n{}'.format(
+            text_output) if text_output else 'No text output\n'
+        text += 'Function returned: {}\n'.format(
+            return_value) if return_value else 'No returned value\n'
 
         end_time = datetime.now()
-        text += f"End time: {end_time:%b %d %H:%M:%S}\n"
+        text += "End time: {0:%b %d %H:%M:%S}\n".format(end_time)
 
         total = (end_time - start_time).seconds
         hours, remainder = divmod(total, 3600)
         minutes, seconds = divmod(remainder, 60)
-        text += f'\nTotal execution time: {hours:02d}:{minutes:02d}:{seconds:02d}\n'
+        text += '\nTotal execution time: {0:02d}:{1:02d}:{2:02d}\n'.format(
+            hours, minutes, seconds)
 
         # Add body to email
         message.attach(MIMEText(text, 'plain'))
@@ -59,7 +63,7 @@ def log_function(function):
 
 def get_email_info():
     for var in ENVIRON_VAR:
-        yield os.environ.get(var) if os.environ.get(var) else input(f'{var}: ')
+        yield os.environ.get(var) if os.environ.get(var) else input('{}: '.format(var))
 
 
 def authenticate_email(email, password):
@@ -80,7 +84,7 @@ def create_message(email, recipient):
 
 def get_function_arguments(args, kwargs):
     args_repr = [repr(a) for a in args]
-    kwargs_repr = [f"{k}={v!r}" for k, v in kwargs.items()]
+    kwargs_repr = ["{0}={1!r}".format(k, v) for k, v in kwargs.items()]
     arguments = ", ".join(args_repr + kwargs_repr)
 
     return arguments

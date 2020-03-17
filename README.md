@@ -58,7 +58,7 @@ Total execution time: 00:00:00
 
 ## Supported versions
 
-- Python 3.6 and above
+- Python 3.4 and above
 
 ## Lincense
 

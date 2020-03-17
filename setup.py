@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="email-function-logger",
-    version="0.3",
+    version="0.4",
     author="Arthur Cerveira",
     author_email="aacerveira@inf.ufpel.edu.br",
     description="A decorator to log information about a function and send it to your email",
@@ -20,5 +20,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.4',
 )
