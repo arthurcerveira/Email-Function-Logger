@@ -1,16 +1,18 @@
 import smtplib
 import os
+import io
 
-from datetime import datetime, timedelta
-from io import StringIO
-from contextlib import redirect_stdout
+from datetime import datetime
+from contextlib import redirect_stdout, redirect_stderr
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-ENVIRON_VAR = ['BOT_EMAIL', 'BOT_PASSWORD', 'LOG_RECIPIENT']
+ENVIRON_VAR = ['LOG_SENDER_EMAIL_ADDRESS',
+               'LOG_SENDER_EMAIL_PASSWORD',
+               'LOG_RECEIVER_EMAIL_ADDRESS']
 
 
-def log_info(function):
+def log_function(function):
     email, password, recipient = get_email_info()
     session = authenticate_email(email, password)
     message = create_message(email, recipient)
@@ -26,23 +28,24 @@ def log_info(function):
         text = f"Function {function.__name__}({arguments}) finished its execution.\n\n"
 
         start_time = datetime.now()
-        text += f"Start time: {start_time:%b %d %Y %H:%M:%S}\n"
+        text += f"Start time: {start_time:%b %d %H:%M:%S}\n"
 
-        f = StringIO()
+        f = io.StringIO()
         with redirect_stdout(f):
             return_value = function(*args, **kwargs)
+
         text_output = f.getvalue()
 
-        text += f'Function text output:\n{text_output}\n' if text_output else 'No text output\n'
+        text += f'Function text output:\n{text_output}' if text_output else 'No text output\n'
         text += f'Function returned: {return_value}\n' if return_value else 'No returned value\n'
 
         end_time = datetime.now()
-        text += f"End time: {end_time:%b %d %Y %H:%M:%S}\n"
+        text += f"End time: {end_time:%b %d %H:%M:%S}\n"
 
         total = (end_time - start_time).seconds
         hours, remainder = divmod(total, 3600)
         minutes, seconds = divmod(remainder, 60)
-        text += f'Total execution time: {hours:02d}:{minutes:02d}:{seconds:02d}\n'
+        text += f'\nTotal execution time: {hours:02d}:{minutes:02d}:{seconds:02d}\n'
 
         # Add body to email
         message.attach(MIMEText(text, 'plain'))
@@ -55,15 +58,8 @@ def log_info(function):
 
 
 def get_email_info():
-    email_info = dict()
-
     for var in ENVIRON_VAR:
-        if os.environ.get(var):
-            email_info[var] = os.environ.get(var)
-        else:
-            email_info[var] = input(f'{var}: ')
-
-    return email_info['BOT_EMAIL'], email_info['BOT_PASSWORD'], email_info['LOG_RECIPIENT']
+        yield os.environ.get(var) if os.environ.get(var) else input(f'{var}: ')
 
 
 def authenticate_email(email, password):
