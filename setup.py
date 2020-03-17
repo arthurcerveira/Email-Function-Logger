@@ -12,6 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/arthurcerveira/Email-Function-Logger",
+    download_url="https://github.com/arthurcerveira/Email-Function-Logger/archive/v0.3.tar.gz",
     packages=setuptools.find_packages(),
     keywords=['log', 'email', 'function', 'logger'],
     classifiers=[
