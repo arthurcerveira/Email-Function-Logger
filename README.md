@@ -23,7 +23,7 @@ This step is optional since you can input the information during the function ru
 ## Example of use
 
 ```python
-from function_logger import log_function
+from email_function_logger import log_function
 
 @log_function
 def mult(x, y):
@@ -37,7 +37,7 @@ def mult(x, y):
 mult(9, 7)
 ```
 
-The log send by email will look like this:
+The log sent by email will look like this:
 
 ```
 Subject:
@@ -60,6 +60,11 @@ Total execution time: 00:00:00
 
 - Python 3.6 and above
 
+## Lincense
+
+- MIT License
+
 ## Links
 
+- PyPI: https://pypi.org/project/email-function-logger/
 - GitHub: https://github.com/arthurcerveira/Email-Function-Logger
