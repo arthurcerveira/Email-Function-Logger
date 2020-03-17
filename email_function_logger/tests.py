@@ -1,4 +1,4 @@
-from function_logger import log_function
+from .function_logger import log_function
 
 
 @log_function
