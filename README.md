@@ -58,9 +58,9 @@ Total execution time: 00:00:00
 
 ## Supported versions
 
-- Python 3.4 and above
+- Python 3.2 and above
 
-## Lincense
+## License
 
 - MIT License
 

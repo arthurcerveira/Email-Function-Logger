@@ -1,9 +1,9 @@
 import smtplib
 import os
 import io
+import sys
 
 from datetime import datetime
-from contextlib import redirect_stdout
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -17,7 +17,7 @@ def log_function(function):
     session = authenticate_email(email, password)
     message = create_message(email, recipient)
 
-    def log_function(*args, **kwargs):
+    def log_function_wrapper(*args, **kwargs):
         arguments = get_function_arguments(args, kwargs)
 
         # Add subject to email
@@ -31,14 +31,16 @@ def log_function(function):
         start_time = datetime.now()
         text += "Start time: {0:%b %d %H:%M:%S}\n".format(start_time)
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        with CapturingOutput() as text_output:
             return_value = function(*args, **kwargs)
 
-        text_output = f.getvalue()
+        if text_output:
+            text += 'Function text output:\n'
+            for op in text_output:
+                text += op + '\n'
+        else:
+            text += 'No text output\n'
 
-        text += 'Function text output:\n{}'.format(
-            text_output) if text_output else 'No text output\n'
         text += 'Function returned: {}\n'.format(
             return_value) if return_value else 'No returned value\n'
 
@@ -58,7 +60,7 @@ def log_function(function):
         session.sendmail(email, recipient, body)
         session.quit()
 
-    return log_function
+    return log_function_wrapper
 
 
 def get_email_info():
@@ -88,3 +90,14 @@ def get_function_arguments(args, kwargs):
     arguments = ", ".join(args_repr + kwargs_repr)
 
     return arguments
+
+
+class CapturingOutput(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = io.StringIO()
+        return self
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio
+        sys.stdout = self._stdout
