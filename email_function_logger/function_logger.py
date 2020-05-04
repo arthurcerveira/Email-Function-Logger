@@ -1,30 +1,26 @@
-import smtplib
+import requests
+
 import os
 import io
 import sys
-
 from datetime import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
-ENVIRON_VAR = ['LOG_SENDER_EMAIL_ADDRESS',
-               'LOG_SENDER_EMAIL_PASSWORD',
-               'LOG_RECEIVER_EMAIL_ADDRESS']
+
+RECIPIENT_VAR = 'EMAIL_ADDRESS'
 
 
 def log_function(function):
-    email, password, recipient = get_email_info()
-    session = authenticate_email(email, password)
-    message = create_message(email, recipient)
+    recipient = get_recipient()
 
     def log_function_wrapper(*args, **kwargs):
+        # If recipient is not defined, just run the function
+        if recipient == "":
+            return function(*args, **kwargs)
+
         arguments = get_function_arguments(args, kwargs)
 
-        # Add subject to email
         subject = "Function '{}' execution log".format(function.__name__)
-        message['Subject'] = subject
 
-        # Start email body text
         text = "Function {}({}) finished its execution.\n\n".format(
             function.__name__, arguments)
 
@@ -37,6 +33,7 @@ def log_function(function):
         if text_output:
             text += 'Function text output:\n'
             for op in text_output:
+                print(op)
                 text += op + '\n'
         else:
             text += 'No text output\n'
@@ -53,35 +50,27 @@ def log_function(function):
         text += '\nTotal execution time: {0:02d}:{1:02d}:{2:02d}\n'.format(
             hours, minutes, seconds)
 
-        # Add body to email
-        message.attach(MIMEText(text, 'plain'))
-        body = message.as_string()
+        send_email(recipient, text, subject)
 
-        session.sendmail(email, recipient, body)
-        session.quit()
+        return return_value
 
     return log_function_wrapper
 
 
-def get_email_info():
-    for var in ENVIRON_VAR:
-        yield os.environ.get(var) if os.environ.get(var) else input('{}: '.format(var))
+def send_email(recipient, text, subject):
+    data = {
+        "recipient": recipient,
+        "text": text,
+        "subject": subject
+    }
+
+    requests.post("https://arthur-email-bot.herokuapp.com/send", json=data)
 
 
-def authenticate_email(email, password):
-    session = smtplib.SMTP('smtp.gmail.com', 587)
-    session.starttls()
-    session.login(email, password)
-
-    return session
-
-
-def create_message(email, recipient):
-    message = MIMEMultipart()
-    message['From'] = email
-    message['To'] = recipient
-
-    return message
+def get_recipient():
+    return os.environ.get(RECIPIENT_VAR) \
+        if os.environ.get(RECIPIENT_VAR) \
+        else input('{}: '.format(RECIPIENT_VAR))
 
 
 def get_function_arguments(args, kwargs):
@@ -97,6 +86,7 @@ class CapturingOutput(list):
         self._stdout = sys.stdout
         sys.stdout = self._stringio = io.StringIO()
         return self
+
     def __exit__(self, *args):
         self.extend(self._stringio.getvalue().splitlines())
         del self._stringio

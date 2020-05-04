@@ -10,12 +10,10 @@ $ pip install email-function-logger
 
 ## Email setup
 
-You can set the email information as environment variables on your machine. To do this, add the following lines to `~/.bashrc` (or `~/.bash_profile` depending on your OS).
+You can set the email information as environment variable on your machine. To do this, add the following line to `~/.bashrc` (or `~/.bash_profile` depending on your OS).
 
 ```bash
-export LOG_SENDER_EMAIL_ADDRESS="example_sender@gmail.com"
-export LOG_SENDER_EMAIL_PASSWORD="password"
-export LOG_RECEIVER_EMAIL_ADDRESS="example_receiver@gmail.com"
+export EMAIL_ADDRESS="example@domain.com"
 ```
 
 This step is optional since you can input the information during the function runtime.
@@ -56,9 +54,17 @@ End time: Mar 16 18:32:16
 Total execution time: 00:00:00
 ```
 
+## How it works
+
+The decorator receives the function information and send a request to a Flask API hosted on Heroku (available [here](https://github.com/arthurcerveira/Email-Bot)). This API then sends the email to the address specified in the `EMAIL_ADDRESS` variable.
+
 ## Supported versions
 
 - Python 3.2 and above
+
+## Author
+
+- [Arthur Cerveira](https://github.com/arthurcerveira)
 
 ## License
 
